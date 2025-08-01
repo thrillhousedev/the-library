@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library - Recommended Reading</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #2c1810 0%, #8b4513 50%, #2c1810 100%);
+            color: #f4f1e8;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .header {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #d4af37;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            color: #d4af37;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 0.5rem;
+        }
+
+        .search-container {
+            margin: 2rem auto;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            border: 2px solid #d4af37;
+            border-radius: 25px;
+            background: rgba(0,0,0,0.4);
+            color: #f4f1e8;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .library-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .book {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+            height: 300px;
+        }
+
+        .book:hover {
+            transform: scale(1.1) rotateY(5deg);
+            z-index: 10;
+        }
+
+        .book-cover {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(145deg, #8b4513, #654321);
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 2px solid #d4af37;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 1rem;
+            overflow: hidden;
+        }
+
+        .book-cover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .book:hover .book-cover::before {
+            opacity: 1;
+        }
+
+        .book-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #d4af37;
+            margin-bottom: 0.5rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+
+        .book-author {
+            font-size: 0.9rem;
+            color: #f4f1e8;
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+
+        .book-spine {
+            position: absolute;
+            left: -8px;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: linear-gradient(to bottom, #654321, #3e2723);
+            border-radius: 0 0 0 8px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #2c1810, #8b4513);
+            margin: 5% auto;
+            padding: 2rem;
+            border: 2px solid #d4af37;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #d4af37;
+        }
+
+        .close {
+            color: #d4af37;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #ffd700;
+        }
+
+        .modal-book-info h2 {
+            color: #d4af37;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-book-info h3 {
+            color: #f4f1e8;
+            font-style: italic;
+            margin-bottom: 1.5rem;
+        }
+
+        .book-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .book-section h4 {
+            color: #d4af37;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid #d4af37;
+            padding-left: 1rem;
+        }
+
+        .book-section p {
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .read-button {
+            background: linear-gradient(45deg, #d4af37, #ffd700);
+            color: #2c1810;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .read-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .reader {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f8f5f0;
+            z-index: 2000;
+            overflow-y: auto;
+        }
+
+        .reader-header {
+            background: #2c1810;
+            color: #d4af37;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .reader-content {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            color: #333;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        .reader-controls {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .control-btn {
+            background: #2c1810;
+            color: #d4af37;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: #d4af37;
+            color: #2c1810;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .library-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 1rem;
+                padding: 1rem;
+            }
+            
+            .book {
+                height: 220px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📚 The Library</h1>
+        <p>Discover extraordinary stories and profound wisdom</p>
+        
+        <div class="search-container">
+            <input type="text" class="search-box" placeholder="Search by title, author, or keyword..." id="searchInput">
+        </div>
+    </div>
+
+    <div class="library-grid" id="libraryGrid">
+        <!-- Books will be dynamically generated -->
+    </div>
+
+    <!-- Modal for book details -->
+    <div id="bookModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-book-info">
+                    <h2 id="modalTitle"></h2>
+                    <h3 id="modalAuthor"></h3>
+                </div>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            
+            <div class="book-section">
+                <h4>Summary</h4>
+                <p id="modalSummary"></p>
+            </div>
+            
+            <div class="book-section">
+                <h4>Why We Recommend This</h4>
+                <p id="modalReason"></p>
+            </div>
+            
+            <button class="read-button" id="readButton">📖 Start Reading</button>
+        </div>
+    </div>
+
+    <!-- In-browser reader -->
+    <div id="reader" class="reader">
+        <div class="reader-header">
+            <h3 id="readerTitle">Reading...</h3>
+            <button class="control-btn" id="closeReader">✕ Close Reader</button>
+        </div>
+        <div class="reader-content" id="readerContent">
+            <!-- Book content will be loaded here -->
+        </div>
+        <div class="reader-controls">
+            <button class="control-btn" id="prevChapter">← Previous</button>
+            <button class="control-btn" id="nextChapter">Next →</button>
+        </div>
+    </div>
+
+    <script>
+        // Sample book data
+        const books = [
+            {
+                id: 1,
+                title: "The Midnight Library",
+                author: "Matt Haig",
+                summary: "Between life and death there is a library, and within that library, the shelves go on forever. Every book provides a chance to try another life you could have lived. To see how things would be if you had made other choices... Would you have done anything different, if you had the chance to undo your regrets?",
+                reason: "A profound exploration of life's infinite possibilities and the weight of our choices. This book beautifully illustrates how every decision creates ripples through our existence, making us question what truly constitutes a life well-lived.",
+                content: `Chapter 1: The Midnight Library
+
+Between life and death there is a library.
+
+It's a place that exists in the space between worlds, filled with all the books that contain all the lives you could have lived. Every book tells the story of how your life might have unfolded if you had made different choices.
+
+In this library, you have the chance to experience these alternative lives, to see how things might have been different if you had chosen another path, another career, another love, another way of being.
+
+The library appears to different people in different ways. To some, it might appear as a small village library. To others, as a vast, multi-level institution. But in every case, it is a place of infinite possibility, where every book represents a life unlived.
+
+This is the story of one woman's journey through that library, and her discovery of what it truly means to live...
+
+[This is a sample excerpt. The full book would continue here with the complete story.]`
+            },
+            {
+                id: 2,
+                title: "Atomic Habits",
+                author: "James Clear",
+                summary: "No matter your goals, Atomic Habits offers a proven framework for improving--every day. James Clear, one of the world's leading experts on habit formation, reveals practical strategies that will teach you exactly how to form good habits, break bad ones, and master the tiny behaviors that lead to remarkable results.",
+                reason: "Essential reading for anyone looking to create lasting positive change. Clear's approach is backed by science yet incredibly practical, showing how small, consistent actions compound into extraordinary outcomes over time.",
+                content: `Chapter 1: The Surprising Power of Atomic Habits
+
+The fate of British Cycling changed one day in 2003.
+
+The organization, which was the governing body for professional cycling in Great Britain, had recently hired Dave Brailsford as its new performance director. At the time, professional cyclists in Great Britain had endured nearly one hundred years of mediocrity. Since 1908, British riders had won just a single gold medal at the Olympic Games, and they had fared even worse in cycling's biggest race, the Tour de France. In 110 years, no British cyclist had ever won the event.
+
+In fact, the performance of British riders had been so underwhelming that one of the top bike manufacturers in Europe refused to sell bikes to the team because they were afraid that it would hurt sales if other professionals saw the Brits using their gear.
+
+Brailsford had been hired to put British Cycling on a new trajectory. What made him different from previous coaches was his relentless commitment to a strategy that he referred to as "the aggregation of marginal gains," which was the philosophy of searching for a tiny margin of improvement in everything you do...
+
+[This is a sample excerpt. The full book would continue here with the complete content.]`
+            },
+            {
+                id: 3,
+                title: "Sapiens",
+                author: "Yuval Noah Harari",
+                summary: "How did our species succeed in the battle for dominance? Why did our foraging ancestors come together to create cities and kingdoms? How did we come to believe in gods, nations and human rights; to trust money, books and laws; and to be enslaved by bureaucracy, timetables and consumerism?",
+                reason: "A breathtaking overview of human history that challenges our assumptions about civilization, progress, and what it means to be human. Harari's insights into how we've organized society are both illuminating and thought-provoking.",
+                content: `Chapter 1: An Animal of No Significance
+
+About 13.5 billion years ago, matter, energy, time and space came into being in what is known as the Big Bang. The story of these fundamental features of our universe is called physics.
+
+About 300,000 years after their appearance, matter and energy started to coalesce into complex structures, called atoms, which then combined into molecules. The story of atoms, molecules and their interactions is called chemistry.
+
+About 3.8 billion years ago, on a planet called Earth, certain molecules combined to form particularly large and intricate structures called organisms. The story of organisms is called biology.
+
+About 70,000 years ago, organisms belonging to the species Homo sapiens started to form even more elaborate structures called cultures. The subsequent development of these human cultures is called history.
+
+Three important revolutions shaped the course of history: the Cognitive Revolution kick-started history about 70,000 years ago...
+
+[This is a sample excerpt. The full book would continue here with the complete content.]`
+            },
+            {
+                id: 4,
+                title: "The Seven Husbands of Evelyn Hugo",
+                author: "Taylor Jenkins Reid",
+                summary: "Aging and reclusive Hollywood movie icon Evelyn Hugo is finally ready to tell the truth about her glamorous and scandalous life. But when she chooses unknown magazine reporter Monique Grant for the job, no one is more astounded than Monique herself.",
+                reason: "A masterful exploration of love, ambition, and sacrifice in Hollywood's golden age. Reid creates a compelling character study that examines the price of fame and the complexity of human relationships with stunning emotional depth.",
+                content: `Chapter 1
+
+Evelyn Hugo was a reclusive Hollywood icon, and I was a nobody.
+
+I was a staff writer at a magazine called Vivant, and I was absolutely, categorically, unquestionably not the right person to be doing a cover story on her.
+
+But there I was, standing in front of her penthouse on the Upper East Side of Manhattan, about to interview one of the most famous women who ever lived.
+
+How did this happen? you might wonder. How does a woman in her early thirties with a mediocre career, a car that sometimes doesn't start, and a very small savings account get the chance to interview Evelyn Hugo?
+
+Well, that's exactly what I was wondering too as I stood there, unsure whether to use the doorman or the buzzer...
+
+[This is a sample excerpt. The full book would continue here with the complete story.]`
+            },
+            {
+                id: 5,
+                title: "Dune",
+                author: "Frank Herbert",
+                summary: "Set in the distant future amidst a feudal interstellar society in which various noble houses control planetary fiefs, it tells the story of young Paul Atreides, whose family accepts the stewardship of the planet Arrakis.",
+                reason: "A science fiction masterpiece that combines complex political intrigue, environmental themes, and profound philosophical questions. Herbert created one of the most detailed and immersive fictional universes ever conceived.",
+                content: `Chapter 1
+
+A beginning is the time for taking the most delicate care that the balances are correct. This every sister of the Bene Gesserit knows. To begin your study of the life of Muad'Dib, then take care that you first place him in his time: born in the 57th year of the Padishah Emperor, Shaddam IV. And take the most special care that you locate Muad'Dib in his place: the planet Arrakis. Do not be deceived by the fact that he was born on Caladan and lived his first fifteen years there. Arrakis, the planet known as Dune, is forever his place.
+
+—from "Manual of Muad'Dib" by the Princess Irulan
+
+In the week before their departure to Arrakis, when all the final scurrying about had reached a nearly unbearable frenzy, an old crone came to visit the mother of the boy, Paul...
+
+[This is a sample excerpt. The full book would continue here with the complete story.]`
+            },
+            {
+                id: 6,
+                title: "Educated",
+                author: "Tara Westover",
+                summary: "Born to survivalists in the mountains of Idaho, Tara Westover was seventeen the first time she set foot in a classroom. Her family was so isolated from mainstream society that there was no one to ensure the children received an education.",
+                reason: "A powerful memoir about the transformative power of education and the courage required to question everything you've been taught. Westover's journey from isolation to enlightenment is both harrowing and inspiring.",
+                content: `Chapter 1: Choose the Good
+
+My strongest memory is not a memory. It's something I imagined, then came to remember as if it had happened. The memory was formed when I was five, just before I turned six, from a story my father told in such detail that I and my brothers and sister had each walked away with our own version of the event.
+
+This is how I remember it: I am five years old, wearing a pink dress, standing in a field of bitter roots. The sun is setting behind the mountain, and the sky is dark. My father is next to me. He takes my small hand in his large one and says, "Tara, can you see that peak?"
+
+The peak is the mountain that overlooks our house, Buck's Peak. I can see it.
+
+"That's the peak where God talks to men," he says. "That peak is holy."
+
+I stare at the mountain. I have never heard of God talking to men before...
+
+[This is a sample excerpt. The full memoir would continue here with the complete story.]`
+            }
+        ];
+
+        let currentBook = null;
+        let filteredBooks = [...books];
+
+        // Initialize the library
+        function initializeLibrary() {
+            renderBooks(filteredBooks);
+            setupEventListeners();
+        }
+
+        // Render books in the grid
+        function renderBooks(booksToRender) {
+            const grid = document.getElementById('libraryGrid');
+            grid.innerHTML = '';
+
+            booksToRender.forEach(book => {
+                const bookElement = document.createElement('div');
+                bookElement.className = 'book';
+                bookElement.innerHTML = `
+                    <div class="book-cover">
+                        <div class="book-spine"></div>
+                        <div class="book-title">${book.title}</div>
+                        <div class="book-author">by ${book.author}</div>
+                    </div>
+                `;
+                
+                bookElement.addEventListener('click', () => openBookModal(book));
+                grid.appendChild(bookElement);
+            });
+        }
+
+        // Open book details modal
+        function openBookModal(book) {
+            currentBook = book;
+            document.getElementById('modalTitle').textContent = book.title;
+            document.getElementById('modalAuthor').textContent = `by ${book.author}`;
+            document.getElementById('modalSummary').textContent = book.summary;
+            document.getElementById('modalReason').textContent = book.reason;
+            document.getElementById('bookModal').style.display = 'block';
+        }
+
+        // Close book modal
+        function closeBookModal() {
+            document.getElementById('bookModal').style.display = 'none';
+            currentBook = null;
+        }
+
+        // Open in-browser reader
+        function openReader() {
+            if (currentBook) {
+                document.getElementById('readerTitle').textContent = currentBook.title;
+                document.getElementById('readerContent').innerHTML = `
+                    <h1>${currentBook.title}</h1>
+                    <h2>by ${currentBook.author}</h2>
+                    <hr style="margin: 2rem 0;">
+                    ${currentBook.content.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>')}
+                `;
+                document.getElementById('reader').style.display = 'block';
+                closeBookModal();
+            }
+        }
+
+        // Close reader
+        function closeReader() {
+            document.getElementById('reader').style.display = 'none';
+        }
+
+        // Search functionality
+        function handleSearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (searchTerm === '') {
+                filteredBooks = [...books];
+            } else {
+                filteredBooks = books.filter(book => 
+                    book.title.toLowerCase().includes(searchTerm) ||
+                    book.author.toLowerCase().includes(searchTerm) ||
+                    book.summary.toLowerCase().includes(searchTerm) ||
+                    book.reason.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            renderBooks(filteredBooks);
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('closeModal').addEventListener('click', closeBookModal);
+            document.getElementById('readButton').addEventListener('click', openReader);
+            document.getElementById('closeReader').addEventListener('click', closeReader);
+            document.getElementById('searchInput').addEventListener('input', handleSearch);
+            
+            // Close modal when clicking outside
+            document.getElementById('bookModal').addEventListener('click', (e) => {
+                if (e.target.id === 'bookModal') {
+                    closeBookModal();
+                }
+            });
+
+            // Reader navigation (placeholder functionality)
+            document.getElementById('prevChapter').addEventListener('click', () => {
+                alert('Previous chapter functionality would be implemented here');
+            });
+            
+            document.getElementById('nextChapter').addEventListener('click', () => {
+                alert('Next chapter functionality would be implemented here');
+            });
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeLibrary);
+    </script>
+</body>
+</html>
